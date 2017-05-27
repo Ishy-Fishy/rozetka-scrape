@@ -1,0 +1,26 @@
+{
+  "name": "rozetka-scrape",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ishy-Fishy/rozetka-scrape.git"
+  },
+  "keywords": [
+    "scrape",
+    "analytics"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Ishy-Fishy/rozetka-scrape/issues"
+  },
+  "homepage": "https://github.com/Ishy-Fishy/rozetka-scrape#readme",
+  "dependencies": {
+    "crawler": "^1.0.5"
+  }
+}
