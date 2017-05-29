@@ -17,23 +17,24 @@ function getPage(url) {
 
 getPage('http://rozetka.com.ua/ua/all-categories-goods/')
     .then((res) => {
-        const links = res.$('.all-cat-b-l-i a.all-cat-b-l-i-link-child')
-        let arr = []
+        const links = res.$('.all-cat-b-l-i a.all-cat-b-l-i-link-child');
+        let arr = [];
         for (let i = 0, len = links.length; i < len; i++) {
             arr.push(links[i].attribs.href)
         }
         return arr
     })
     .then((data) => {
+
         console.log(data)
     });
 
 class CatParser {
     constructor(url) {
         this.baseUrl = url.replace(/\/$/, '');
-        this.url = this.baseUrl;
         this.cfg = this.defCfg();
         this.page = 0;
+        this._crawl = new Crawler()
     }
 
     static defCfg() {
@@ -44,7 +45,11 @@ class CatParser {
         }
     }
 
-    appendUrlParams() {
-        if (this.page > 0);
+    get url() {
+        return `${this.baseUrl}${this.page > 0 && this.cfg.urlPageParam + this.page + this.cfg.urlParam}/`
+    }
+
+    listItems(page) {
+
     }
 }
