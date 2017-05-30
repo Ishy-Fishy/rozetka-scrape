@@ -3,7 +3,7 @@
 const Crawler = require('crawler');
 const fs = require('fs');
 
-function getPage (url) {
+function getPage(url) {
     return new Promise((resolve, reject) => {
         const crawlie = new Crawler({
             rateLimit: 1000,
@@ -17,30 +17,36 @@ function getPage (url) {
     });
 }
 
+// let cats = new Promise((resolve, reject) => {
+//     fs.readFile('./cats.json', {}, (err, data) => {
+//         if (err) reject(err);
+//         resolve(data);
+//     })
+// });
+//
 getPage('http://rozetka.com.ua/ua/all-categories-goods/')
     .then((res) => {
         const links = res.$('.all-cat-b-l-i a.all-cat-b-l-i-link-child');
         let arr = [];
         for (let i = 0, len = links.length; i < len; i++) {
-            arr.push(links[i].attribs.href);
+            const link = (links[i].attribs || {}).href;
+            const name = (links[i].children[0] || {}).data;
+            arr.push({name: name, link: link});
         }
         return arr;
     })
     .then((data) => {
-        return data.map((val) => new Cat(val));
+        fs.writeFile('./cats3.json', JSON.stringify(data))
     })
-    .then((cats) => {
-        return cats[0].items
-    })
-    .then((items) => {
-        return items[0].rating
-    })
-    .then((rating)=> {
-        console.log(rating)
-    });
+// .then((cats) => {
+//     return Promise.all(JSON.parse(cats).map((x) => new Cat(x)))
+// })
+// .then((catObjects) => {
+//     return
+// })
 
 class Cat {
-    constructor (url) {
+    constructor(url, name) {
         this.baseUrl = url;
         this.cfg = {
             jQString: 'div.g-i-tile-i-title a',
@@ -48,13 +54,14 @@ class Cat {
             urlPageParam: 'page='
         };
         this.page = 0;
+        this.name = name;
     }
 
-    get url () {
+    get url() {
         return `${this.baseUrl}${this.cfg.urlPageParam}${this.page};${this.cfg.urlParam}/`;
     }
 
-    getItemsOnPage (page) {
+    getItemsOnPage(page) {
         this.page = page;
         return getPage(this.url).then((data) => {
             const items = data.$(this.cfg.jQString);
@@ -66,9 +73,7 @@ class Cat {
         });
     }
 
-    get items () {
-        if (this._items) return this._items;
-        this._items = 'pending';
+    getAllItems() {
         const items = [];
         for (let i = 0; i < 16; i++) {
             items.push(this.getItemsOnPage(i));
@@ -81,14 +86,14 @@ class Cat {
 }
 
 class Item {
-    constructor (url) {
+    constructor(url) {
         this.url = url;
         this.cfg = {
             jQString: 'span.sprite.g-rating-stars-i'
         };
     }
 
-    get rating () {
+    get rating() {
         return getPage(this.url)
             .then((data) => {
                 let ratings = data.$(this.cfg.jQString);
