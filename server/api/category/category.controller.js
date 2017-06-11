@@ -12,11 +12,12 @@
 
 import jsonpatch from 'fast-json-patch';
 import Category from './category.model';
+import CatUtil from './category.util';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
-  return function(entity) {
-    if(entity) {
+  return function (entity) {
+    if (entity) {
       return res.status(statusCode).json(entity);
     }
     return null;
@@ -24,11 +25,11 @@ function respondWithResult(res, statusCode) {
 }
 
 function patchUpdates(patches) {
-  return function(entity) {
+  return function (entity) {
     try {
       // eslint-disable-next-line prefer-reflect
       jsonpatch.apply(entity, patches, /*validate*/ true);
-    } catch(err) {
+    } catch (err) {
       return Promise.reject(err);
     }
 
@@ -37,8 +38,8 @@ function patchUpdates(patches) {
 }
 
 function removeEntity(res) {
-  return function(entity) {
-    if(entity) {
+  return function (entity) {
+    if (entity) {
       return entity.remove()
         .then(() => {
           res.status(204).end();
@@ -48,8 +49,8 @@ function removeEntity(res) {
 }
 
 function handleEntityNotFound(res) {
-  return function(entity) {
-    if(!entity) {
+  return function (entity) {
+    if (!entity) {
       res.status(404).end();
       return null;
     }
@@ -59,12 +60,12 @@ function handleEntityNotFound(res) {
 
 function handleError(res, statusCode) {
   statusCode = statusCode || 500;
-  return function(err) {
+  return function (err) {
     res.status(statusCode).send(err);
   };
 }
 
-// Gets a list of Categorys
+// Gets a list of Categories
 export function index(req, res) {
   return Category.find().exec()
     .then(respondWithResult(res))
@@ -88,18 +89,22 @@ export function create(req, res) {
 
 // Upserts the given Category in the DB at the specified ID
 export function upsert(req, res) {
-  if(req.body._id) {
+  if (req.body._id) {
     Reflect.deleteProperty(req.body, '_id');
   }
-  return Category.findOneAndUpdate({_id: req.params.id}, req.body, {new: true, upsert: true, setDefaultsOnInsert: true, runValidators: true}).exec()
-
+  return Category.findOneAndUpdate({_id: req.params.id}, req.body, {
+    new: true,
+    upsert: true,
+    setDefaultsOnInsert: true,
+    runValidators: true
+  }).exec()
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
 
 // Updates an existing Category in the DB
 export function patch(req, res) {
-  if(req.body._id) {
+  if (req.body._id) {
     Reflect.deleteProperty(req.body, '_id');
   }
   return Category.findById(req.params.id).exec()
@@ -114,5 +119,25 @@ export function destroy(req, res) {
   return Category.findById(req.params.id).exec()
     .then(handleEntityNotFound(res))
     .then(removeEntity(res))
+    .catch(handleError(res));
+}
+
+export function init(req, res) {
+  const offset = Number.isNaN(+req.query.off) ? 0 : +req.query.off;
+  const limit = Number.isNaN(+req.query.lim) ? 10 : +req.query.lim;
+  const cats = CatUtil.getPremadeCats(offset, limit);
+  return Promise.all(cats.map(cat => cat.rawItems))
+    .then(() => {
+      const catArr = cats
+        .map(cat => cat.toJSON())
+        .map(catObj => Category.findOneAndUpdate({name: catObj.name}, catObj, {
+          new: true,
+          upsert: true,
+          setDefaultsOnInsert: true,
+          runValidators: true
+        }).exec());
+      return Promise.all(catArr);
+    }) //items is a getter-promise
+    .then(respondWithResult(res))
     .catch(handleError(res));
 }

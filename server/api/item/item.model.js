@@ -10,8 +10,8 @@ var ItemSchema = new mongoose.Schema({
   commentTrend: String
 });
 
-ItemSchema.index({url: 1}, {unique: true, name: "ITEM_URL_UINDEX"});
-ItemSchema.index({name: 1}, {name: "ITEM_NAME_INDEX"});
+ItemSchema.index({url: 1}, {unique: true, name: 'ITEM_URL_UINDEX'});
+ItemSchema.index({name: 1}, {name: 'ITEM_NAME_INDEX'});
 
 registerEvents(ItemSchema);
 export default mongoose.model('Item', ItemSchema);

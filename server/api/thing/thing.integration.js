@@ -138,8 +138,8 @@ describe('Thing API:', function() {
       request(app)
         .patch(`/api/things/${newThing._id}`)
         .send([
-          { op: 'replace', path: '/name', value: 'Patched Thing' },
-          { op: 'replace', path: '/info', value: 'This is the patched thing!!!' }
+          {op: 'replace', path: '/name', value: 'Patched Thing'},
+          {op: 'replace', path: '/info', value: 'This is the patched thing!!!'}
         ])
         .expect(200)
         .expect('Content-Type', /json/)

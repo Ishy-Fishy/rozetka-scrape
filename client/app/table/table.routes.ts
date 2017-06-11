@@ -5,7 +5,7 @@ export default function routes($stateProvider) {
   'ngInject';
   $stateProvider
     .state('table', {
-      url: '/table/',
+      url: '/',
       template: '<table></table>'
     });
 };

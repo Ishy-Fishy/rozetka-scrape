@@ -6,7 +6,6 @@ export class TableController {
   $http;
   socket;
   categories = [];
-  newThing = '';
   scrapeProgress = 0;
 
   /*@ngInject*/

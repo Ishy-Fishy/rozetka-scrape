@@ -138,8 +138,8 @@ describe('Category API:', function() {
       request(app)
         .patch(`/api/categories/${newCategory._id}`)
         .send([
-          { op: 'replace', path: '/name', value: 'Patched Category' },
-          { op: 'replace', path: '/info', value: 'This is the patched category!!!' }
+          {op: 'replace', path: '/name', value: 'Patched Category'},
+          {op: 'replace', path: '/info', value: 'This is the patched category!!!'}
         ])
         .expect(200)
         .expect('Content-Type', /json/)

@@ -40,7 +40,7 @@ describe('Category API Router:', function() {
     it('should route to category.controller.index', function() {
       expect(routerStub.get
         .withArgs('/', 'categoryCtrl.index')
-        ).to.have.been.calledOnce;
+      ).to.have.been.calledOnce;
     });
   });
 
@@ -48,7 +48,7 @@ describe('Category API Router:', function() {
     it('should route to category.controller.show', function() {
       expect(routerStub.get
         .withArgs('/:id', 'categoryCtrl.show')
-        ).to.have.been.calledOnce;
+      ).to.have.been.calledOnce;
     });
   });
 
@@ -56,7 +56,7 @@ describe('Category API Router:', function() {
     it('should route to category.controller.create', function() {
       expect(routerStub.post
         .withArgs('/', 'categoryCtrl.create')
-        ).to.have.been.calledOnce;
+      ).to.have.been.calledOnce;
     });
   });
 
@@ -64,7 +64,7 @@ describe('Category API Router:', function() {
     it('should route to category.controller.upsert', function() {
       expect(routerStub.put
         .withArgs('/:id', 'categoryCtrl.upsert')
-        ).to.have.been.calledOnce;
+      ).to.have.been.calledOnce;
     });
   });
 
@@ -72,7 +72,7 @@ describe('Category API Router:', function() {
     it('should route to category.controller.patch', function() {
       expect(routerStub.patch
         .withArgs('/:id', 'categoryCtrl.patch')
-        ).to.have.been.calledOnce;
+      ).to.have.been.calledOnce;
     });
   });
 
@@ -80,7 +80,7 @@ describe('Category API Router:', function() {
     it('should route to category.controller.destroy', function() {
       expect(routerStub.delete
         .withArgs('/:id', 'categoryCtrl.destroy')
-        ).to.have.been.calledOnce;
+      ).to.have.been.calledOnce;
     });
   });
 });
