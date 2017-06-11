@@ -25,6 +25,39 @@ function premadeCats() {
   return JSON.parse(cats);
 }
 
+class Item {
+  constructor(url) {
+    this.url = url;
+    this.cfg = {
+      jQString: 'span.sprite.g-rating-stars-i',
+      jQNameString: 'h1.detail-title'
+    };
+  }
+
+  data() {
+    return this._data || getPage(this.url)
+        .then((data) => {
+          let name = data.$('h1.detail-title')[0].children[0].data;
+          let comments = Array.prototype.slice.call(data.$('article.pp-review-i div.pp-review-text-i'));
+          let ratings = data.$(this.cfg.jQString);
+          let total = 0;
+          let count = 0;
+          for(let i = 0, len = ratings.length; i < len; i++) {
+            if(!(ratings[i].attribs || {}).content) continue;
+            total += +ratings[i].attribs.content;
+            count++;
+          }
+          this._data = {
+            rating: (total / count),
+            name
+          };
+          return this._data;
+        });
+  }
+
+}
+
+
 class Cat {
   constructor(url, name) {
     this.baseUrl = url;
@@ -59,11 +92,11 @@ class Cat {
       );
   }
 
-  static getPremadeCats() {
-    return premadeCats()
-    // eslint-disable-next-line no-confusing-arrow
+  static getPremadeCats(offset, limit) {
+    const cats = premadeCats();
+    return cats
+      .slice(+offset, offset + limit)
       .map(({name, link}) => /(hotels|travel|payments)/.test(link) ? void null : new Cat(link, name))
-      // eslint-disable-next-line no-confusing-arrow
       .reduce((acc, curr) => curr ? acc.concat(curr) : acc, []);
   }
 
@@ -73,9 +106,13 @@ class Cat {
     return matched.pop();
   }
 
-  get items() {
-    if (!(this._items instanceof Promise)) this._items = this.getAllItems();
-    return this._items;
+  get rawItems() {
+    if (this._items && Array.isArray(this._items)) return this._items;
+    return this.getAllItems()
+      .then(items => {
+        this._items = items;
+        return this._items;
+      });
   }
 
   getAllItems() {
@@ -83,7 +120,7 @@ class Cat {
     for (let i = 0; i < 16; i++) promArr.push(this.getItemsOnOnePage(i));
     return Promise.all(promArr)
       .then(scrapedUrlArr => {
-        return scrapedUrlArr.reduce((acc, curr)=> acc.concat(curr) , []);
+        return scrapedUrlArr.reduce((acc, curr) => acc.concat(curr), []);
       });
   }
 
@@ -92,7 +129,7 @@ class Cat {
       .then(data => {
         const iterable = data.$(this.cfg.jQString);
         const result = [];
-        for(let i = 0, len = iterable.length; i < len; i++){
+        for (let i = 0, len = iterable.length; i < len; i++) {
           const url = (iterable[i].attribs || {}).href;
           url && result.push(url);
         }
@@ -105,7 +142,26 @@ class Cat {
       name: this.name,
       displayName: this.displayName,
       url: this.baseUrl,
-      items: this.items
+      items: this.items,
+      rawItems: this.rawItems
     };
   }
 }
+
+const cats = Cat.getPremadeCats(0, 2);
+
+Promise.all(cats.map(cat => cat.rawItems))
+  .then(() => {
+    const catItems = cats.map(cat => {
+      cat.items = cat.rawItems.map((url) => new Item(url))
+      return cat;
+    });
+    return Promise.all(catItems
+      .map(cat => cat.items.map(item => item.data()))
+      .reduce((acc, curr) => curr ? acc.concat(curr) : acc ,[])
+    )
+      .then(() => catItems)
+  })
+  .then((data) => {
+    console.log(data)
+  })
