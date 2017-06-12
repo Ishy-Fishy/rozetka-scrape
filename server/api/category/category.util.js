@@ -1,7 +1,7 @@
 'use strict';
-import {getPage, premadeCats} from '../../util/scraper.util';
+import {getPage} from '../../util/scraper.util';
 
-export default class Cat {
+export class Cat {
   constructor(url, name) {
     this.baseUrl = url;
     this.cfg = {
@@ -23,24 +23,16 @@ export default class Cat {
         const links = res.$('.all-cat-b-l-i a.all-cat-b-l-i-link-child');
         let arr = [];
         for (let i = 0, len = links.length; i < len; i++) {
-          const link = (links[i].attribs || {}).href;
+          const url = (links[i].attribs || {}).href;
           const name = (links[i].children[0] || {}).data;
-          arr.push({name, link});
+          arr.push({name, url});
         }
         return arr;
       })
       .then((parsed) => parsed
-        .map(({name, link}) => /(hotels|travel|payments)/.test(link) ? void null : new Cat(link, name))
+        .map(({name, url}) => /(hotels|travel|payments)/.test(url) ? void null : new Cat(url, name))
         .reduce((acc, curr) => curr ? acc.concat(curr) : acc, [])
       );
-  }
-
-  static getPremadeCats(offset, limit) {
-    const cats = premadeCats();
-    return cats
-      .slice(+offset, offset + limit)
-      .map(({name, link}) => /(hotels|travel|payments)/.test(link) ? void null : new Cat(link, name))
-      .reduce((acc, curr) => curr ? acc.concat(curr) : acc, []);
   }
 
   static parseUrlForName(url) {
@@ -50,7 +42,7 @@ export default class Cat {
   }
 
   get rawItems() {
-    if (this._items && Array.isArray(this._items)) return this._items;
+    if (this._rawItems && Array.isArray(this._items)) return this._items;
     return this.getAllItems()
       .then(items => {
         this._items = items;
@@ -87,5 +79,11 @@ export default class Cat {
       url: this.baseUrl,
       items: this.items
     };
+  }
+}
+
+export class MCat extends Cat {
+  constructor(cat){
+    super(cat.url, cat.name)
   }
 }

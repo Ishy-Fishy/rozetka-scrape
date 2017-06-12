@@ -1,0 +1,26 @@
+ul.pagination.root-panel-pagination(ng-if='max > 0')
+  li(ng-show='current > 2')
+    a(ng-click='onClick()(current - 5, scrollTo)', aria-label='Previous')
+      span(aria-hidden='true') «
+  li(ng-show='current > 1')
+    a(ng-click='onClick()(current -2, scrollTo)')
+      span {{current - 1}}
+  li(ng-show='current > 0')
+    a(ng-click='onClick()(current - 1, scrollTo)')
+      span {{current}}
+  li.active
+    a
+      span {{current + 1}}
+  li(ng-show='max > current')
+    a(ng-click='onClick()(current + 1, scrollTo)')
+      span {{current + 2}}
+  li(ng-show='max > current + 1')
+    a(ng-click='onClick()(current + 2, scrollTo)')
+      span {{current + 3}}
+  li(ng-show='max > current + 2')
+    a(ng-click='onClick()(current + 5, scrollTo)', aria-label='Next')
+      span(aria-hidden='true') »
+
+pre {{onClick | json }}
+pre {{current | json }}
+pre {{max | json }}

@@ -1,0 +1,37 @@
+.container.container-fluid
+  .input-group
+    input.form-control(type='text',
+    placeholder='Пошук по товару',
+    ng-model='vm.search',
+    ng-change='vm.getItems()',
+    ng-model-options='{debounce: 300}')
+    table.table.table-striped.table-hover(ng-show='vm.loaded')
+      thead
+        tr
+          th
+            span Назва товару
+          th
+            span Рейтинг товару
+          th
+            span Найчастіший негативний відгук
+          th
+            span Частота вживання
+          th
+            span Найчастіший позитивний відгук
+          th
+            span Частота вживання
+      tr(ng-repeat="item in vm.items")
+        td
+          span(ng-bind='item.name')
+        td
+          span(ng-bind='item.rating')
+        td
+          span(ng-bind='item.avgBad.data')
+        td
+          span(ng-bind='item.avgBad.count')
+        td
+          span(ng-bind='item.avgGood.data')
+        td
+          span(ng-bind='item.avgGood.count')
+  loader-spin(loaded='vm.loaded')
+  pagination-bar(current='vm.currentPage', max='vm.totalPages', on-click='vm.getCategories')

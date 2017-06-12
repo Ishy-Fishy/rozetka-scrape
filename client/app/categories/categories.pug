@@ -1,0 +1,22 @@
+.container.container-fluid
+  .input-group
+    input.form-control(type='text',
+    placeholder='Пошук по назві категорії',
+    ng-model='vm.search',
+    ng-change='vm.getCategories()',
+    ng-model-options='{debounce: 300}')
+    table.table.table-striped.table-hover(ng-show='vm.loaded')
+      thead
+        tr
+          th
+            span Назва категорії
+          th
+            span Посилання на категорію
+      tr(ng-repeat="cat in vm.categories")
+        td
+          span(ng-bind='cat.name')
+        td
+          a(ui-sref='items({id: cat._id})')
+            span(ng-bind='cat.url')
+  loader-spin(loaded='vm.loaded')
+  pagination-bar(current='vm.currentPage', max='vm.totalPages', on-click='vm.getCategories')

@@ -14,13 +14,16 @@ const uiBootstrap = require('angular-ui-bootstrap');
 
 import {routeConfig} from './app.config';
 
-
+import main from './main/main.component';
 import navbar from '../components/navbar/navbar.component';
 import footer from '../components/footer/footer.component';
+import paginationBar from '../components/pagination/pagination.component';
 import constants from './app.constants';
 import util from '../components/util/util.module';
 import socket from '../components/socket/socket.service';
-import table from './table/table.component';
+import categories from './categories/categories.component';
+import items from './items/items.component';
+import loader from './../components/loader/loader.component';
 
 
 import './app.scss';
@@ -31,15 +34,18 @@ angular.module('rozetkaScrapeApp', [
   ngSanitize,
 
   'btford.socket-io',
-
+  main,
   uiRouter,
   uiBootstrap,
   navbar,
   footer,
+  paginationBar,
   constants,
   socket,
   util,
-  table
+  categories,
+  items,
+  loader
 ])
   .config(routeConfig)
 ;

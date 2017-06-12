@@ -11,7 +11,7 @@ export function getPage(url, number) {
     crawlie.queue({
       uri: url,
       callback: (err, res, done) => {
-        if(err) console.error(`----- item ${number | ''} failed`);
+        if (err) console.error(`----- item ${number | ''} failed`);
         console.log(`+++++ item ${number | ''} page ${url} received`);
         done();
         resolve(res);
@@ -21,6 +21,6 @@ export function getPage(url, number) {
 }
 
 export function premadeCats() {
-  const cats = fs.readFileSync(path.resolve(__dirname, './scraper.premade.json'));
+  const cats = fs.readFileSync(path.resolve(__dirname, './categories.premade.json'));
   return JSON.parse(cats);
 }

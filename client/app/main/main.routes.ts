@@ -4,8 +4,8 @@
 export default function routes($stateProvider) {
   'ngInject';
   $stateProvider
-    .state('table', {
+    .state('main', {
       url: '/',
-      template: '<table></table>'
+      template: '<main></main>'
     });
 };

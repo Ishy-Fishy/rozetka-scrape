@@ -12,7 +12,7 @@
 
 import jsonpatch from 'fast-json-patch';
 import Category from './category.model';
-import CatUtil from './category.util';
+import {premadeCats} from './../../util/scraper.util';
 
 function respondWithResult(res, statusCode) {
   statusCode = statusCode || 200;
@@ -67,7 +67,27 @@ function handleError(res, statusCode) {
 
 // Gets a list of Categories
 export function index(req, res) {
-  return Category.find().exec()
+  const limit = +req.query.limit;
+  const offset = +req.query.offset;
+  const search = new RegExp(`.*${(req.query.search || '').replace(/[\W]/g, '.')}.*`, 'i');
+  const criteria = {};
+  if (req.query.search) Object.assign(criteria, {
+    name: search
+  });
+
+  const dataPipe = Category.find(criteria)
+    .sort({name: 1})
+    .limit(limit)
+    .skip(offset)
+    .exec()
+    .then((cats) => {
+      return Promise.all(cats.map(cat => cat.populateItemData()));
+    });
+
+  const metaPipe = Category.count(criteria)
+    .exec();
+
+  return Promise.all([dataPipe, metaPipe])
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
@@ -123,21 +143,18 @@ export function destroy(req, res) {
 }
 
 export function init(req, res) {
-  const offset = Number.isNaN(+req.query.off) ? 0 : +req.query.off;
-  const limit = Number.isNaN(+req.query.lim) ? 10 : +req.query.lim;
-  const cats = CatUtil.getPremadeCats(offset, limit);
-  return Promise.all(cats.map(cat => cat.rawItems))
-    .then(() => {
-      const catArr = cats
-        .map(cat => cat.toJSON())
-        .map(catObj => Category.findOneAndUpdate({name: catObj.name}, catObj, {
-          new: true,
-          upsert: true,
-          setDefaultsOnInsert: true,
-          runValidators: true
-        }).exec());
-      return Promise.all(catArr);
-    }) //items is a getter-promise
+  const cats = premadeCats();
+  Category.insertMany(cats, {ordered: false})
     .then(respondWithResult(res))
+    .catch(handleError(res));
+}
+
+export function getParam(req, res, next) {
+  return Category.findById(req.params.id).exec()
+    .then(handleEntityNotFound(res))
+    .then((category) => {
+      if (!res.locals) res.locals = {};
+      res.locals.category = category;
+    })
     .catch(handleError(res));
 }
