@@ -5,8 +5,8 @@ var controller = require('./category.controller');
 
 var router = express.Router();
 
-router.get('/init', controller.init);
-router.get('/', controller.index);
+router.get('/', controller.initIfNeeded, controller.index);
+router.get('/:id', controller.show);
 
 router.use('/:id/items', controller.getParam, require('./item'));
 

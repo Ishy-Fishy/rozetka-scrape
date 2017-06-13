@@ -67,51 +67,44 @@ function handleError(res, statusCode) {
 export function initIfNeeded(req, res, next) {
   const parentCat = res.locals.category;
   if (!parentCat) return handleError(res);
-  if (parentCat._items.length === 0 && parentCat.populated === false) {
-    const itemUrls = parentCat.items;
-    return Item.insertMany(itemUrls.map(url => {
-      return {
-        url: url,
-        _category: parentCat._id
-      }
-    }))
-      .then(({acknowledged, insertedIds}) => {
-        parentCat._items = [].concat(insertedIds);
-        if (acknowledged) parentCat.populated = true;
-        return parentCat.save().then(() => insertedIds)
+  if (parentCat.loaded === false) {
+    const pCatId = parentCat._id;
+    Item.remove({_category: pCatId})
+      .then(() => {
+        const itemSkeleton = parentCat.items.map(url => ({url, _category: pCatId}));
+        return Item.insertMany(itemSkeleton, {ordered: false})
       })
-      .then(ids => Item.find({
-        _id: {
-          $in: ids
-        }
+      .then((inserted) => {
+        parentCat._items = inserted;
+        parentCat.loaded = true;
+        return parentCat.save()
       })
-        .exec())
-      .then(items => Promise.all(items.map(item => item.analyze())))
       .then(() => next())
-      .catch(err => console.log(error));
-  } else next()
+      .catch(err => err.code === 11000 ? next() : next(err))
+  } else return next()
 }
 
 export function index(req, res) {
   const limit = +req.query.limit;
   const offset = +req.query.offset;
   const search = new RegExp(`.*${(req.query.search || '').replace(/[\W]/g, '.')}.*`, 'i');
-  const criteria = {};
+  const pCatId = res.locals.category._id || req.params.id;
+  const criteria = {_category: pCatId};
+  if (req.query.search) Object.assign(criteria, {
+    name: search
+  });
 
   const dataPipe = Item.find(criteria)
     .sort({url: 1})
     .limit(limit)
     .skip(offset)
     .exec()
-    .then((items) => {
-      Promise.all(items.map(item => item.analyze()))
-    });
+    .then((items) => Promise.all(items.map(item => item.analyze())));
 
   const metaPipe = Item.count(criteria)
     .exec();
 
   return Promise.all([dataPipe, metaPipe])
-    .then(data => data)
     .then(respondWithResult(res))
     .catch(handleError(res));
 

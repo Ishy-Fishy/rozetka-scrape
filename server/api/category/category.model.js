@@ -2,23 +2,28 @@
 
 import mongoose from 'mongoose';
 import {registerEvents} from './category.events';
-import {MCat} from './category.util'
+import {MCat} from './category.util';
 
 var CategorySchema = new mongoose.Schema({
-  url: String,
+  url: {
+    type: String,
+    required: true
+  },
   name: String,
-  items: [String],
+  items: [{
+    type: String,
+  }],
   _items: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Item'
   }],
   pristine: {
     type: Boolean,
-    defaultValue: true
+    default: true
   },
-  populated: {
+  loaded: {
     type: Boolean,
-    defaultValue: false
+    default: false
   }
 });
 
@@ -26,8 +31,8 @@ CategorySchema.index({url: 1}, {unique: true, name: 'CATEGORY_URL_UINDEX'});
 CategorySchema.index({name: 1}, {name: 'CATEGORY_NAME_INDEX'});
 
 CategorySchema.methods.populateItemData = function () {
-  const self = this;
-  if (self.items.length === 0 && self.pristine === true) {
+  if (this.items.length === 0 && this.pristine === true) {
+    const self = this;
     const cat = new MCat(self);
     return cat.getAllItems()
       .then(items => {
@@ -36,7 +41,7 @@ CategorySchema.methods.populateItemData = function () {
         return self.save()
       })
       .catch(err => console.error(err))
-  } else return Promise.resolve(self)
+  } else return Promise.resolve(this)
 };
 
 registerEvents(CategorySchema);

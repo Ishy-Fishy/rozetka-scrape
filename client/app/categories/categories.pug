@@ -19,4 +19,4 @@
           a(ui-sref='items({id: cat._id})')
             span(ng-bind='cat.url')
   loader-spin(loaded='vm.loaded')
-  pagination-bar(current='vm.currentPage', max='vm.totalPages', on-click='vm.getCategories')
+  pagination-bar(current='vm.currentPage' max='vm.totalPages' on-click='vm.getCategories(page)')

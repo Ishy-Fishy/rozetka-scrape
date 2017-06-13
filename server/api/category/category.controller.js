@@ -80,14 +80,13 @@ export function index(req, res) {
     .limit(limit)
     .skip(offset)
     .exec()
-    .then((cats) => {
-      return Promise.all(cats.map(cat => cat.populateItemData()));
-    });
+    .then((cats) => Promise.all(cats.map(cat => cat.populateItemData())));
 
   const metaPipe = Category.count(criteria)
     .exec();
 
   return Promise.all([dataPipe, metaPipe])
+    .then(data => data)
     .then(respondWithResult(res))
     .catch(handleError(res));
 }
@@ -142,19 +141,26 @@ export function destroy(req, res) {
     .catch(handleError(res));
 }
 
-export function init(req, res) {
-  const cats = premadeCats();
-  Category.insertMany(cats, {ordered: false})
-    .then(respondWithResult(res))
-    .catch(handleError(res));
+export function initIfNeeded(req, res, next) {
+  return Category
+    .count()
+    .exec()
+    .then(count => {
+      if (count > 0) return next();
+      const cats = premadeCats();
+      return Category.insertMany(cats, {ordered: false})
+    })
+    .then(() => next())
+    .catch(err => err.code === 11000 ? next() : next(err))
 }
 
 export function getParam(req, res, next) {
-  return Category.findById(req.params.id).exec()
-    .then(handleEntityNotFound(res))
+  return Category.findById(req.params.id)
+    .exec()
     .then((category) => {
       if (!res.locals) res.locals = {};
       res.locals.category = category;
     })
+    .then(() => next())
     .catch(handleError(res));
 }

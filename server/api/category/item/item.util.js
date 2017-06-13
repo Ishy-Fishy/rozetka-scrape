@@ -23,11 +23,19 @@ export class Item {
           total += +ratings[i].attribs.content;
           count++;
         }
-        this._data = {
-          rating: (total / count),
+        let rating = Math.round((total / count) * 10) / 10;
+        return {
           name,
-          commentData: comments
-        };
+          rating: isNaN(rating) ? 0 : rating,
+          avgGood: { //todo: implement!!
+            data: 'foo',
+            count: 3
+          },
+          avgBad: {
+            data: 'bar',
+            count: 10
+          }
+        }
       });
   }
 
@@ -35,6 +43,14 @@ export class Item {
 
 export class MItem extends Item {
   constructor(item) {
-    super(item.url)
+    super(item.url);
+    this.__mongoObject = item;
+  }
+
+  data() {
+    return this.constructor.__proto__.prototype.data.call(this) //currently, this shit is the only way to call a parent non-static method without using outside scope variables
+      .then(info => {
+        return Object.assign(this.__mongoObject, info);
+      })
   }
 }

@@ -32,3 +32,12 @@ function removeListener(event, listener) {
     CategoryEvents.removeListener(event, listener);
   };
 }
+
+// export class ProgressBar {
+//   private socket;
+//   constructor(socket){
+//     this.socket = socket;
+//     socket.on('disconnect', th('categoryProgress'))
+//   }
+// }
+

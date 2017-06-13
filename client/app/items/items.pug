@@ -34,4 +34,4 @@
         td
           span(ng-bind='item.avgGood.count')
   loader-spin(loaded='vm.loaded')
-  pagination-bar(current='vm.currentPage', max='vm.totalPages', on-click='vm.getCategories')
+  pagination-bar(current='vm.currentPage', max='vm.totalPages', on-click='vm.getItems(page)')

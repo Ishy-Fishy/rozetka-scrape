@@ -17,6 +17,8 @@ function onConnect(socket) {
 
   // Insert sockets below
   require('../api/thing/thing.socket').register(socket);
+  // require('../api/category/category.socket').progressBar(socket);
+  // require('../api/category/item/item.socket').progressBar(socket);
 }
 
 export default function(socketio) {

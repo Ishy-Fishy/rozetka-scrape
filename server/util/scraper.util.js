@@ -22,5 +22,6 @@ export function getPage(url, number) {
 
 export function premadeCats() {
   const cats = fs.readFileSync(path.resolve(__dirname, './categories.premade.json'));
+
   return JSON.parse(cats);
 }

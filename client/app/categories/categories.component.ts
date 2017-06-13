@@ -6,9 +6,7 @@ export class TableController {
   $http;
   socket;
   public categories = [];
-  scrapeProgress = 0;
   public limit: number = 32;
-  public countTotal: number;
   public search: string;
   public currentPage = 0;
   public totalPages = 0;
@@ -34,7 +32,7 @@ export class TableController {
     })
       .then(response => {
         this.categories = [].concat(response.data[0]);
-        this.totalPages = Math.ceil(response.data[1] / this.limit);
+        this.totalPages = Math.floor(response.data[1] / this.limit) + (response.data[1] > 0 && response.data[1] % this.limit === 0 ? 1 : 0);
         this.loaded = true;
       });
 

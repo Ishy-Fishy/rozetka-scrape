@@ -55,7 +55,8 @@ export class Cat {
     for (let i = 0; i < 16; i++) promArr.push(this.getItemsOnOnePage(i));
     return Promise.all(promArr)
       .then(scrapedUrlArr => {
-        return scrapedUrlArr.reduce((acc, curr) => acc.concat(curr), []);
+        const notUnique = scrapedUrlArr.reduce((acc, curr) => acc.concat(curr), []);
+        return Array.from(new Set(notUnique))
       });
   }
 
@@ -83,7 +84,7 @@ export class Cat {
 }
 
 export class MCat extends Cat {
-  constructor(cat){
+  constructor(cat) {
     super(cat.url, cat.name)
   }
 }

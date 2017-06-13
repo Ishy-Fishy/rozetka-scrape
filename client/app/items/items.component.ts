@@ -23,17 +23,18 @@ export class ItemsController {
   public getItems(page = 0) {
     this.currentPage = page;
     this.loaded = false;
-    return this.$http.get(`/api/category/:id/items`, {
+    console.log(this.id);
+    console.log(`/api/category/${this.id}/items`);
+    return this.$http.get(`/api/category/${this.id}/items`, {
       params: {
         limit: this.limit,
         offset: page * this.limit,
-        search: this.search,
-        id: this.id
+        search: this.search
       }
     })
       .then(response => {
         this.items = [].concat(response.data[0]);
-        this.totalPages = Math.ceil(response.data[1] / this.limit);
+        this.totalPages = Math.floor(response.data[1] / this.limit) + (response.data[1] > 0 && response.data[1] % this.limit === 0 ? 1 : 0);
         this.loaded = true;
       });
 
