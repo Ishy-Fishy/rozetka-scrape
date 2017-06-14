@@ -2,7 +2,7 @@
 
 /* globals describe, expect, it, beforeEach, afterEach */
 
-var app = require('../../../index');
+var app = require('../../index');
 import request from 'supertest';
 
 var newItem;

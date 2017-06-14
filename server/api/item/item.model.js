@@ -11,8 +11,14 @@ var ItemSchema = new mongoose.Schema({
   },
   name: String,
   rating: Number,
-  avgGood: Object,
-  avgBad: Object,
+  avgGood: {
+    data: String,
+    count: Number
+  },
+  avgBad: {
+    data: String,
+    count: Number
+  },
   _category: mongoose.Schema.Types.ObjectId,
   loaded: {
     type: Boolean,

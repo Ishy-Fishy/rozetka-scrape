@@ -1,27 +1,7 @@
-"use strict";
-const url = 'http://rozetka.com.ua/apple_mmgf2ua_a/p8616504';
-const Crawler = require('crawler');
-const fs = require('fs');
-const path = require('path');
-const crawlie = new Crawler({maxConnections: 10});
+'use strict';
+import {getPage} from '../../util/scraper.util';
 
-function getPage(url, number) {
-  console.log(`||||| item ${number | ''} querying page ${url}`);
-  return new Promise((resolve, reject) => {
-    crawlie.queue({
-      uri: url,
-      callback: (err, res, done) => {
-        if (err) console.error(`----- item ${number | ''} failed`);
-        console.log(`+++++ item ${number | ''} page ${url} received`);
-        done();
-        resolve(res);
-      }
-    });
-  });
-}
-
-
-class Item {
+export class Item {
   constructor(url) {
     this.url = url;
     this.cfg = {
@@ -109,8 +89,16 @@ class Item {
   }
 }
 
-const foo = new Item(url);
-foo.details().then(data => {
-  console.log(data)
-});
+export class MItem extends Item {
+  constructor(item) {
+    super(item.url);
+    this.__mongoObject = item;
+  }
 
+  details() {
+    return this.constructor.__proto__.prototype.data.call(this) //currently, this shit is the only way to call a parent non-static method without using outside scope variables
+      .then(info => {
+        return Object.assign(this.__mongoObject, info);
+      })
+  }
+}
