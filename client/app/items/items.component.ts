@@ -12,7 +12,7 @@ export class ItemsController {
   public currentPage = 0;
   public totalPages = 0;
   public loaded: boolean = false;
-
+  public error;
   /*@ngInject*/
   constructor($http, $scope, socket, $stateParams) {
     this.$http = $http;
@@ -21,6 +21,7 @@ export class ItemsController {
   }
 
   public getItems(page = 0) {
+    this.error = void null;
     this.currentPage = page;
     this.loaded = false;
     console.log(this.id);
@@ -36,8 +37,11 @@ export class ItemsController {
         this.items = [].concat(response.data[0]);
         this.totalPages = Math.floor(response.data[1] / this.limit) + (response.data[1] > 0 && response.data[1] % this.limit === 0 ? 1 : 0);
         this.loaded = true;
+      })
+      .then(err => {
+        this.loaded = true;
+        this.error = err;
       });
-
   }
 
   $onInit() {

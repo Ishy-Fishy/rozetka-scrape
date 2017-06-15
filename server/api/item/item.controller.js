@@ -87,11 +87,21 @@ export function initIfNeeded(req, res, next) {
 export function index(req, res) {
   const limit = +req.query.limit;
   const offset = +req.query.offset;
-  const search = new RegExp(`.*${(req.query.search || '').replace(/[\W]/g, '.')}.*`, 'i');
+  const search = new RegExp(`.*${(req.query.search || '').replace(/[^\w\u0400-\u04FF]+/g, '.')}.*`, 'i');
   const pCatId = res.locals.category._id || req.params.id;
   const criteria = {_category: pCatId};
   if (req.query.search) Object.assign(criteria, {
-    name: search
+    $or: [
+      {
+        name: search
+      },
+      {
+        'avgGood.data': search
+      },
+      {
+        'avgBad.data': search
+      }
+    ]
   });
 
   const dataPipe = Item.find(criteria)

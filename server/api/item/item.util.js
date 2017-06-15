@@ -37,22 +37,36 @@ export class Item {
         for (let i = 0, keys = Object.keys(positive), len = keys.length; i < len; i++) {
           let hash = keys[i];
           let val = positive[hash];
-          (val > 1 && val < 5 && val > goodVal) && (goodVal = val, good = hash)
+          (val > 1 && val < 6 && val > goodVal) && (goodVal = val, good = hash)
         }
         for (let i = 0, keys = Object.keys(negative), len = keys.length; i < len; i++) {
           let hash = keys[i];
           let val = negative[hash];
-          (val > 1 && val < 5 && val > badVal) && (badVal = val, bad = hash)
+          (val > 1 && val < 6 && val > badVal) && (badVal = val, bad = hash)
         }
         data.avgGood = {
-          data: good,
+          data: good || 'N/A',
           count: goodVal
         };
         data.avgBad = {
-          data: bad,
+          data: bad || 'N/A',
           count: badVal
         };
         return data;
+      })
+      .catch(()=> {
+        return {
+          avgGood: {
+            data: 'N/A',
+            count: 0
+          },
+          avgBad: {
+            data: 'N/A',
+            count: 0
+          },
+          rating: 0,
+          name: 'Parse error'
+        }
       })
   }
 
@@ -96,7 +110,7 @@ export class MItem extends Item {
   }
 
   details() {
-    return this.constructor.__proto__.prototype.data.call(this) //currently, this shit is the only way to call a parent non-static method without using outside scope variables
+    return this.constructor.__proto__.prototype.details.call(this) //currently, this shit is the only way to call a parent non-static method without using outside scope variables
       .then(info => {
         return Object.assign(this.__mongoObject, info);
       })

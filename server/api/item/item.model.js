@@ -33,7 +33,7 @@ ItemSchema.methods.analyze = function () {
   if (!this.loaded) {
     const self = this;
     const item = new MItem(self);
-    return item.data()
+    return item.details()
       .then(() => {
         self.loaded = true;
         return self.save()

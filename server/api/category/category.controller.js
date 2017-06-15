@@ -69,7 +69,7 @@ function handleError(res, statusCode) {
 export function index(req, res) {
   const limit = +req.query.limit;
   const offset = +req.query.offset;
-  const search = new RegExp(`.*${(req.query.search || '').replace(/[\W]/g, '.')}.*`, 'i');
+  const search = new RegExp(`.*${(req.query.search || '').replace(/[\w\u0400-\u04FF]/g, '.')}.*`, 'i');
   const criteria = {};
   if (req.query.search) Object.assign(criteria, {
     name: search
@@ -147,10 +147,12 @@ export function initIfNeeded(req, res, next) {
     .exec()
     .then(count => {
       if (count > 0) return next();
-      const cats = premadeCats();
-      return Category.insertMany(cats, {ordered: false})
+      else {
+        const cats = premadeCats();
+        return Category.insertMany(cats, {ordered: false})
+          .then(() => next())
+      }
     })
-    .then(() => next())
     .catch(err => err.code === 11000 ? next() : next(err))
 }
 

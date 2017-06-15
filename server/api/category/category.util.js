@@ -11,6 +11,8 @@ export class Cat {
     };
     this.displayName = name;
     this.name = this.constructor.parseUrlForName(url);
+    this.lastParsed = 0;
+    this.items = new Set();
   }
 
   static get mainUrl() {
@@ -51,26 +53,22 @@ export class Cat {
   }
 
   getAllItems() {
-    const promArr = [];
-    for (let i = 0; i < 16; i++) promArr.push(this.getItemsOnOnePage(i));
-    return Promise.all(promArr)
-      .then(scrapedUrlArr => {
-        const notUnique = scrapedUrlArr.reduce((acc, curr) => acc.concat(curr), []);
-        return Array.from(new Set(notUnique))
-      });
+    return this.recursiveGet()
   }
 
-  getItemsOnOnePage(page) {
-    return getPage(`${this.baseUrl}${this.cfg.urlPageParam}${page};${this.cfg.urlParam}/`)
+  recursiveGet() {
+    return getPage(`${this.baseUrl}${this.cfg.urlPageParam}${this.lastParsed};${this.cfg.urlParam}/`)
       .then(data => {
         const iterable = data.$(this.cfg.jQString);
-        const result = [];
+        const prevLen = this.items.size;
         for (let i = 0, len = iterable.length; i < len; i++) {
           const url = (iterable[i].attribs || {}).href;
-          url && result.push(url);
+          url && this.items.add(url);
         }
-        return result;
-      });
+        this.lastParsed++;
+        if (this.items.size > prevLen && this.lastParsed < 15) return this.recursiveGet();
+        else return this.items;
+      })
   }
 
   toJSON() {
@@ -85,6 +83,20 @@ export class Cat {
 
 export class MCat extends Cat {
   constructor(cat) {
-    super(cat.url, cat.name)
+    super(cat.url, cat.name);
+    this.__mongoObject = cat;
+  }
+
+  getAllItems() {
+    return this.constructor.__proto__.prototype.getAllItems.call(this)
+      .then(() => {
+        this.__mongoObject.items = Array.from(this.items);
+        this.__mongoObject.pristine = false;
+        this.__mongoObject.save()
+      })
+      .catch(() => {
+        this.__mongoObject.items = Array.from(this.items);
+        this.__mongoObject.save()
+      })
   }
 }

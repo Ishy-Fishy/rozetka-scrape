@@ -35,12 +35,6 @@ CategorySchema.methods.populateItemData = function () {
     const self = this;
     const cat = new MCat(self);
     return cat.getAllItems()
-      .then(items => {
-        self.items = items;
-        self.pristine = false;
-        return self.save()
-      })
-      .catch(err => console.error(err))
   } else return Promise.resolve(this)
 };
 

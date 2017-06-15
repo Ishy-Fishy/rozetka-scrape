@@ -6,15 +6,15 @@ import path from 'path';
 const crawlie = new Crawler({maxConnections: 10});
 
 export function getPage(url, number) {
-  console.log(`||||| item ${number | ''} querying page ${url}`);
+  console.log(`||||| item ${number || ''} querying page ${url}`);
   return new Promise((resolve, reject) => {
     crawlie.queue({
       uri: url,
       callback: (err, res, done) => {
-        if (err) console.error(`----- item ${number | ''} failed`);
-        console.log(`+++++ item ${number | ''} page ${url} received`);
+        if (err) console.error(`----- item ${number || ''} failed`);
+        console.log(`+++++ item ${number || ''} page ${url} received`);
         done();
-        resolve(res);
+        resolve(res || null);
       }
     });
   });

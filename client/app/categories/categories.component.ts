@@ -11,6 +11,7 @@ export class TableController {
   public currentPage = 0;
   public totalPages = 0;
   public loaded: boolean = false;
+  public error;
 
   public diff = [];
 
@@ -21,6 +22,7 @@ export class TableController {
   }
 
   public getCategories(page = 0) {
+    this.error = void null;
     this.currentPage = page;
     this.loaded = false;
     return this.$http.get(`/api/category`, {
@@ -34,8 +36,11 @@ export class TableController {
         this.categories = [].concat(response.data[0]);
         this.totalPages = Math.floor(response.data[1] / this.limit) + (response.data[1] > 0 && response.data[1] % this.limit === 0 ? 1 : 0);
         this.loaded = true;
+      })
+      .catch(err => {
+        this.loaded = true;
+        this.error = err;
       });
-
   }
 
   $onInit() {

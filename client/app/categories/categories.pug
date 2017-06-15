@@ -1,4 +1,7 @@
 .container.container-fluid
+  .alert.alert-danger(ng-show='vm.error')
+    strong An error occurred.
+    span {{vm.error.message}}
   .input-group
     input.form-control(type='text',
     placeholder='Пошук по назві категорії',
