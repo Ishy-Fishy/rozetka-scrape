@@ -92,11 +92,11 @@ export class MCat extends Cat {
       .then(() => {
         this.__mongoObject.items = Array.from(this.items);
         this.__mongoObject.pristine = false;
-        this.__mongoObject.save()
+        return this.__mongoObject.save()
       })
       .catch(() => {
         this.__mongoObject.items = Array.from(this.items);
-        this.__mongoObject.save()
+        return this.__mongoObject.save()
       })
   }
 }
