@@ -74,13 +74,19 @@ export function initIfNeeded(req, res, next) {
         const itemSkeleton = parentCat.items.map(url => ({url, _category: pCatId}));
         return Item.insertMany(itemSkeleton, {ordered: false})
       })
-      .then((inserted) => {
-        parentCat._items = inserted;
+      .then(items => {
+        return Promise.all(items.map(item => item.baseData()))
+      })
+      .then(baseItemDataArr => {
+        parentCat._items = baseItemDataArr;
         parentCat.loaded = true;
         return parentCat.save()
       })
-      .then(() => next())
-      .catch(err => err.code === 11000 ? next() : next(err))
+      .then(() => {
+        next();
+        return null;
+      })
+      .catch(err => err.code === 11000 ? next() : handleError(res)(err))
   } else return next()
 }
 
@@ -105,7 +111,7 @@ export function index(req, res) {
   });
 
   const dataPipe = Item.find(criteria)
-    .sort({url: 1})
+    .sort({rating: -1})
     .limit(limit)
     .skip(offset)
     .exec()

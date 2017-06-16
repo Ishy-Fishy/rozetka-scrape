@@ -34,7 +34,7 @@ export class TableController {
     })
       .then(response => {
         this.categories = [].concat(response.data[0]);
-        this.totalPages = Math.floor(response.data[1] / this.limit) + (response.data[1] > 0 && response.data[1] % this.limit === 0 ? 1 : 0);
+        this.totalPages = Math.ceil(response.data[1] / this.limit);
         this.loaded = true;
       })
       .catch(err => {

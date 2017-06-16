@@ -23,7 +23,12 @@ var ItemSchema = new mongoose.Schema({
   loaded: {
     type: Boolean,
     default: false
-  }
+  },
+  pristine: {
+    type: Boolean,
+    default: true
+  },
+  meta: Object
 });
 
 ItemSchema.index({url: 1}, {unique: true, name: 'ITEM_URL_UINDEX'});
@@ -36,6 +41,19 @@ ItemSchema.methods.analyze = function () {
     return item.details()
       .then(() => {
         self.loaded = true;
+        return self.save()
+      })
+      .catch(err => console.error(err))
+  } else return Promise.resolve(this)
+};
+
+ItemSchema.methods.baseData = function () {
+  if (this.pristine === true && this.url) {
+    const self = this;
+    const item = new MItem(self);
+    return item.basic()
+      .then(() => {
+        self.pristine = false;
         return self.save()
       })
       .catch(err => console.error(err))

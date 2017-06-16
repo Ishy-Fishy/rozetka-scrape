@@ -24,8 +24,6 @@ export class ItemsController {
     this.error = void null;
     this.currentPage = page;
     this.loaded = false;
-    console.log(this.id);
-    console.log(`/api/category/${this.id}/items`);
     return this.$http.get(`/api/category/${this.id}/items`, {
       params: {
         limit: this.limit,
@@ -35,7 +33,7 @@ export class ItemsController {
     })
       .then(response => {
         this.items = [].concat(response.data[0]);
-        this.totalPages = Math.floor(response.data[1] / this.limit) + (response.data[1] > 0 && response.data[1] % this.limit === 0 ? 1 : 0);
+        this.totalPages = Math.ceil(response.data[1] / this.limit)
         this.loaded = true;
       })
       .then(err => {

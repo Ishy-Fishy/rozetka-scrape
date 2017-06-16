@@ -11,12 +11,12 @@ ul.pagination.root-panel-pagination(ng-if='max > 0')
   li.active
     a
       span {{current + 1}}
-  li(ng-show='max > current')
+  li(ng-show='max > current + 1')
     a(ng-click='onClick({page: current + 1})')
       span {{current + 2}}
-  li(ng-show='max > current + 1')
+  li(ng-show='max > current + 2')
     a(ng-click='onClick({page: current + 2})')
       span {{current + 3}}
-  li(ng-show='max > current + 2')
+  li(ng-show='max > current + 3')
     a(ng-click='onClick({page: current + 5})', aria-label='Next')
       span(aria-hidden='true') »

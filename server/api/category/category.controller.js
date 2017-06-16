@@ -69,7 +69,7 @@ function handleError(res, statusCode) {
 export function index(req, res) {
   const limit = +req.query.limit;
   const offset = +req.query.offset;
-  const search = new RegExp(`.*${(req.query.search || '').replace(/[\w\u0400-\u04FF]/g, '.')}.*`, 'i');
+  const search = new RegExp(`.*${(req.query.search || '').replace(/[^\w\u0400-\u04FF]/g, '.')}.*`, 'i');
   const criteria = {};
   if (req.query.search) Object.assign(criteria, {
     name: search
@@ -146,23 +146,25 @@ export function initIfNeeded(req, res, next) {
     .count()
     .exec()
     .then(count => {
-      if (count > 0) return next();
-      else {
-        const cats = premadeCats();
-        return Category.insertMany(cats, {ordered: false})
-          .then(() => next())
-      }
+      if (count > 0) return null;
+      else return Category.insertMany(premadeCats(), {ordered: false})
     })
-    .catch(err => err.code === 11000 ? next() : next(err))
+    .then(() => {
+      next();
+      return null;
+    })
+    .catch(err => err.code === 11000 ? next() : handleError(res)(err))
 }
 
 export function getParam(req, res, next) {
   return Category.findById(req.params.id)
     .exec()
-    .then((category) => {
+    .then(cat => cat.populateItemData())
+    .then(category => {
       if (!res.locals) res.locals = {};
       res.locals.category = category;
+      next();
+      return null;
     })
-    .then(() => next())
     .catch(handleError(res));
 }

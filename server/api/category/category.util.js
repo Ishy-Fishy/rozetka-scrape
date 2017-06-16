@@ -11,7 +11,7 @@ export class Cat {
     };
     this.displayName = name;
     this.name = this.constructor.parseUrlForName(url);
-    this.lastParsed = 0;
+    this.lastParsed = 1;
     this.items = new Set();
   }
 
@@ -53,10 +53,12 @@ export class Cat {
   }
 
   getAllItems() {
-    return this.recursiveGet()
+    return new Promise((resolve, reject) => {
+      return this.recursiveGet(resolve)
+    })
   }
 
-  recursiveGet() {
+  recursiveGet(resolver) {
     return getPage(`${this.baseUrl}${this.cfg.urlPageParam}${this.lastParsed};${this.cfg.urlParam}/`)
       .then(data => {
         const iterable = data.$(this.cfg.jQString);
@@ -65,9 +67,13 @@ export class Cat {
           const url = (iterable[i].attribs || {}).href;
           url && this.items.add(url);
         }
-        this.lastParsed++;
-        if (this.items.size > prevLen && this.lastParsed < 15) return this.recursiveGet();
-        else return this.items;
+        if (this.lastParsed < 15 && iterable.length === 32 && this.items.size > prevLen) {
+          this.lastParsed++;
+          return this.recursiveGet(resolver);
+        } else return resolver();
+      })
+      .catch(() => {
+        return resolver()
       })
   }
 
@@ -90,13 +96,7 @@ export class MCat extends Cat {
   getAllItems() {
     return this.constructor.__proto__.prototype.getAllItems.call(this)
       .then(() => {
-        this.__mongoObject.items = Array.from(this.items);
-        this.__mongoObject.pristine = false;
-        return this.__mongoObject.save()
-      })
-      .catch(() => {
-        this.__mongoObject.items = Array.from(this.items);
-        return this.__mongoObject.save()
+        return Object.assign(this.__mongoObject, {items: Array.from(this.items)});
       })
   }
 }

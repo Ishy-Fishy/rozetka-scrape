@@ -18,15 +18,29 @@ export class Item {
     return url.match(/\bp[0-9]{5,9}/)[0];
   }
 
-  details() {
+  basic() {
     const data = {};
     return getPage(`${this.cfg.apiBase}${this.cfg.getParams}${this._rId}`)
       .then(res => {
         const json = (JSON.parse(res.body).content || [])[0].content;
         if (!json) return null;
-        Object.assign(data, {name: json.title, rating: json.users_rating});
-        return this.commentStats({count: json.count_comments, url: json.comments_href});
-      })
+        Object.assign(data, {
+          name: json.title,
+          rating: json.users_rating,
+          meta: {
+            count: json.count_comments,
+            com_url: json.comments_href
+          }
+        });
+        return data;
+      });
+  }
+
+  details({count, com_url}) {
+    const data = {};
+    if (!count) count = 5;
+    if (!com_url) com_url = `${this.url}comments/`;
+    return this.commentStats({count: count, url: com_url})
       .then(stats => {
         const positive = stats.positive;
         const negative = stats.negative;
@@ -54,7 +68,7 @@ export class Item {
         };
         return data;
       })
-      .catch(()=> {
+      .catch(() => {
         return {
           avgGood: {
             data: 'N/A',
@@ -63,15 +77,14 @@ export class Item {
           avgBad: {
             data: 'N/A',
             count: 0
-          },
-          rating: 0,
-          name: 'Parse error'
+          }
         }
       })
   }
 
   commentStats({count, url}) {
-    const maxPage = Math.ceil(count / 10);
+    const maxCount = Math.ceil(count / 10);
+    const maxPage = maxCount > 16 ? 15 : maxCount;
     const stats = Object.freeze({positive: {}, negative: {}});
     const promises = [];
     for (let i = 1; i <= maxPage; i++) promises.push(single(`${url}${this.cfg.commentCoreParams}${i}${this.cfg.commentTrailingParams}`))
@@ -109,8 +122,16 @@ export class MItem extends Item {
     this.__mongoObject = item;
   }
 
+  basic() {
+    return this.constructor.__proto__.prototype.basic.call(this)
+      .then(info => {
+        return Object.assign(this.__mongoObject, info)
+      })
+  }
+
   details() {
-    return this.constructor.__proto__.prototype.details.call(this) //currently, this shit is the only way to call a parent non-static method without using outside scope variables
+    const meta = this.meta || {};
+    return this.constructor.__proto__.prototype.details.call(this, meta) //currently, this shit is the only way to call a parent non-static method without using outside scope variables
       .then(info => {
         return Object.assign(this.__mongoObject, info);
       })

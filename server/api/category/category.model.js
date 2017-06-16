@@ -31,13 +31,15 @@ CategorySchema.index({url: 1}, {unique: true, name: 'CATEGORY_URL_UINDEX'});
 CategorySchema.index({name: 1}, {name: 'CATEGORY_NAME_INDEX'});
 
 CategorySchema.methods.populateItemData = function () {
-  if (this.items.length === 0 && this.pristine === true) {
+  if (this.pristine === true) {
     const self = this;
     const cat = new MCat(self);
     return cat.getAllItems()
-      .then((obj) => {
-        return obj;
+      .then(() => {
+        self.pristine = false;
+        return self.save()
       })
+      .catch(err => console.error(err))
   } else return Promise.resolve(this)
 };
 
