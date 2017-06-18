@@ -25,7 +25,8 @@
             span Частота вживання
       tr(ng-repeat="item in vm.items")
         td
-          span(ng-bind='item.name || item.url')
+          a(ng-href='{{item.url}}')
+            span(ng-bind='item.name || item.url')
         td
           span(ng-bind='item.rating')
         td
